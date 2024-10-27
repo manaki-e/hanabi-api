@@ -1,10 +1,12 @@
 from flask import Flask, jsonify, request, Response
+from flask_cors import CORS
 from api.hanabi import Game
 from api.models.player import Player
 from api.models.agent import Agent
 import random
 
 app = Flask(__name__)
+CORS(app)
 
 games = {}
 players = {}
