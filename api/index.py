@@ -8,8 +8,18 @@ import random
 app = Flask(__name__)
 CORS(app)
 
-games = {}
-players = {}
+games = {i: Game() for i in range(200)}
+players = {
+    i: {
+        0: Player([games[i].deck.draw() for _ in range(5)]),
+        1: (
+            Player([games[i].deck.draw() for _ in range(5)])
+            if i < 100
+            else Agent([games[i].deck.draw() for _ in range(5)])
+        ),
+    }
+    for i in range(200)
+}
 
 
 @app.route("/api/rooms", methods=["GET"])
@@ -18,7 +28,7 @@ def rooms():
         [
             {
                 "room_id": i,
-                "is_finished": (games[i].check_finished() if i in games else False),
+                "is_finished": games[i].check_finished(),
             }
             for i in range(200)
         ]
@@ -37,20 +47,6 @@ def get_info(room_id, player_id):
 
     # * クエリパラメータの取得
     elapsed_time = request.args.get("time")
-
-    # * ゲームの取得または新規作成
-    if room_id not in games:
-        games[room_id] = Game()
-        if isVsAgent:
-            players[room_id] = {
-                0: Player([games[room_id].deck.draw() for _ in range(5)]),
-                1: Agent([games[room_id].deck.draw() for _ in range(5)]),
-            }
-        else:
-            players[room_id] = {
-                0: Player([games[room_id].deck.draw() for _ in range(5)]),
-                1: Player([games[room_id].deck.draw() for _ in range(5)]),
-            }
 
     game = games[room_id]
     player = players[room_id][player_id]
@@ -229,3 +225,7 @@ def agent_action(room_id, player_id):
             opponent.update_first_info(game.trash_table, game.field_cards, player.hand)
     game.switch_turn()
     return jsonify({"thinking_time": thinking_time})
+
+
+if __name__ == "__main__":
+    app.run()
