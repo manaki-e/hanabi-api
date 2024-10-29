@@ -228,4 +228,4 @@ def agent_action(room_id, player_id):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
