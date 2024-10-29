@@ -115,11 +115,11 @@ def post_info(room_id, player_id):
         if request.form.get("teach") == "color":
             color = request.form.get("color")
             opponent.get_info(color=color)
-            game.add_history(f"{color}のカードについて、ヒントを伝えました", player_id)
+            game.add_history(f"「{color}」に関するヒントを伝えました。", player_id)
         else:
             number = int(request.form.get("number"))
             opponent.get_info(number=number)
-            game.add_history(f"{number}のカードについて、ヒントを伝えました", player_id)
+            game.add_history(f"「{number}」に関するヒントを伝えました。", player_id)
 
     # * ターンの切り替え
     game.switch_turn()
@@ -192,9 +192,7 @@ def agent_action(room_id, player_id):
                 player.hand,
             )
             player.get_info(color=color, number=number)
-            game.add_history(
-                f"{color or number}のカードについて、ヒントを伝えました", 1
-            )
+            game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
         # * 相⼿がプレイ可能なカードを持っていないかつ、残りのヒントトークンが少なければ、ヒントをもらっていないカードからランダムに捨てる
         elif game.teach_token < 3:
             index = opponent.random_discard()
@@ -211,9 +209,7 @@ def agent_action(room_id, player_id):
             game.teach_token -= 1
             color, number = opponent.teach_random_hint(player.hand)
             player.get_info(color=color, number=number)
-            game.add_history(
-                f"{color or number}のカードについて、ヒントを伝えました", 1
-            )
+            game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
     # * ヒントトークンが残っていなかったら、⾃分のカードからランダムに1枚捨てる
     else:
         index = opponent.random_discard()
