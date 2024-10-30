@@ -194,7 +194,7 @@ def agent_action(room_id, player_id):
             player.get_info(color=color, number=number)
             game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
         # * 相⼿がプレイ可能なカードを持っていないかつ、残りのヒントトークンが少なければ、ヒントをもらっていないカードからランダムに捨てる
-        elif game.teach_token < 3:
+        elif game.teach_token < 2:
             index = opponent.random_discard()
             card = opponent.hand[index]
             game.add_history(game.trash(card), 1)
