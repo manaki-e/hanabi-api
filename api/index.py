@@ -8,17 +8,17 @@ import random
 app = Flask(__name__)
 CORS(app)
 
-games = {i: Game() for i in range(200)}
+games = {i: Game() for i in range(400)}
 players = {
     i: {
         0: Player([games[i].deck.draw() for _ in range(5)]),
         1: (
             Player([games[i].deck.draw() for _ in range(5)])
-            if i < 100
+            if i < 200
             else Agent([games[i].deck.draw() for _ in range(5)])
         ),
     }
-    for i in range(200)
+    for i in range(400)
 }
 
 
@@ -30,7 +30,7 @@ def rooms():
                 "room_id": i,
                 "is_finished": games[i].check_finished(),
             }
-            for i in range(200)
+            for i in range(400)
         ]
     )
 
