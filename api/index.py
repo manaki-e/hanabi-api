@@ -108,7 +108,7 @@ def post_info(room_id, player_id):
             new_card = game.deck.draw()
             player.add(new_card)
             if isVsAgent:
-                for card_model in opponent.info:
+                for card_model in opponent.info_model:
                     card_model.decrement_card(new_card.color, new_card.number - 1)
 
     elif form_id == "hint":

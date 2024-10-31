@@ -7,49 +7,54 @@ from api.core.config import colors
 class Agent:
     def __init__(self, first_hand):
         self.hand = first_hand
-        self.info = [CardModel() for _ in range(5)]
+        self.info = [Card(None, None) for _ in range(5)]
+        self.info_model = [CardModel() for _ in range(5)]
 
     def add(self, card):
         self.hand.append(card)
-        self.info.append(CardModel())
+        self.info.append(Card(None, None))
+        self.info_model.append(CardModel())
 
     def discard(self, index):
         self.hand.pop(index)
         self.info.pop(index)
+        self.info_model.pop(index)
 
     def update_first_info(self, trash_table, field_cards, opponent_hand):
-        self.info[-1].cards = {
+        self.info_model[-1].cards = {
             color: [
                 a - b
-                for a, b in zip(self.info[-1].cards[color], trash_table.cards[color])
+                for a, b in zip(self.info_model[-1].cards[color], trash_table.cards[color])
             ]
-            for color in self.info[-1].cards
+            for color in self.info_model[-1].cards
         }
         for card in field_cards:
             for number in range(card.number):
-                self.info[-1].decrement_card(card.color, number)
+                self.info_model[-1].decrement_card(card.color, number)
         for card in opponent_hand:
-            self.info[-1].decrement_card(card.color, card.number - 1)
+            self.info_model[-1].decrement_card(card.color, card.number - 1)
 
     def get_info(self, color=None, number=None):
         if color is not None:
             for index, card in enumerate(self.hand):
                 if card.color == color:
+                    self.info[index].color = color
                     for color_variant in colors:
                         if color_variant != color:
-                            self.info[index].cards[color_variant] = [0] * 5
+                            self.info_model[index].cards[color_variant] = [0] * 5
                 else:
-                    self.info[index].cards[color] = [0] * 5
+                    self.info_model[index].cards[color] = [0] * 5
         if number is not None:
             for index, card in enumerate(self.hand):
                 if card.number == number:
+                    self.info[index].number = number
                     for color_variant in colors:
                         for i in range(5):
                             if i != number - 1:
-                                self.info[index].cards[color_variant][i] = 0
+                                self.info_model[index].cards[color_variant][i] = 0
                 else:
                     for color_variant in colors:
-                        self.info[index].cards[color_variant][number - 1] = 0
+                        self.info_model[index].cards[color_variant][number - 1] = 0
 
     def check_playable(self, field_cards):
         """
@@ -59,7 +64,7 @@ class Agent:
         Returns
             __type__ : int
         """
-        for index, card_model in enumerate(self.info):
+        for index, card_model in enumerate(self.info_model):
             possible_cards = card_model.get_possible_cards()
             if set(
                 [
@@ -90,12 +95,12 @@ class Agent:
     def check_discardable(self, discardable_cards):
         """
         _summary_
-            プレイ可能なカードがあるかどうかをチェックする
+            捨てることができるカードがあるかどうかをチェックする
 
         Returns
             __type__ : int
         """
-        for index, card_model in enumerate(self.info):
+        for index, card_model in enumerate(self.info_model):
             possible_cards = card_model.get_possible_cards()
             if set(
                 [
@@ -177,5 +182,5 @@ class Agent:
         Returns
             __type__ : int
         """
-        number_of_zeros = [card_model.count_zero() for card_model in self.info]
+        number_of_zeros = [card_model.count_zero() for card_model in self.info_model]
         return number_of_zeros.index(min(number_of_zeros))

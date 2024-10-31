@@ -65,6 +65,7 @@ class Game:
                 "mistake_token": self.mistake_token,
                 "field_cards": [card.to_dict() for card in self.field_cards],
                 "opponent_hand": [card.to_dict() for card in opponent.hand],
+                "opponent_info": [card.to_dict() for card in opponent.info],
                 "player_hand": [card.to_dict() for card in player.hand],
                 "player_info": [card.to_dict() for card in player.info],
                 "remaining_cards": len(self.deck.cards),
