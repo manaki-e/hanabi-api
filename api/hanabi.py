@@ -28,6 +28,9 @@ class Game:
         # 捨てられたカード
         self.trash_table = TrashTable()
 
+        # 思考時間
+        self.elapsed_times = []
+
     def switch_turn(self):
         self.current_player = 1 - self.current_player
 

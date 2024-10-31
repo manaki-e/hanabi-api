@@ -45,9 +45,6 @@ def get_info(room_id, player_id):
     room_id = int(room_id)
     player_id = int(player_id) % 2
 
-    # * クエリパラメータの取得
-    elapsed_time = request.args.get("time")
-
     game = games[room_id]
     player = players[room_id][player_id]
     opponent = players[room_id][1 - player_id]
@@ -87,6 +84,10 @@ def post_info(room_id, player_id):
     # * 残山札が0の場合
     if len(game.deck.cards) == 0:
         game.is_finished -= 1
+
+    # * 思考時間の記録
+    elapsed_time = request.args.get("time")
+    game.elapsed_times.append({"elapsed_time": elapsed_time, "player_id": player_id})
 
     form_id = request.form.get("form_id")
 
