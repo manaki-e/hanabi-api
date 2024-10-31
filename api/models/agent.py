@@ -107,7 +107,7 @@ class Agent:
                 return index
         return None
 
-    def teach_hint(self, playable_cards, opponent_hand):
+    def teach_hint(self, playable_cards, opponent):
         """
         _summary_
             相手がプレイ可能なカードを持っているときに、色または数字のヒントを与える
@@ -117,28 +117,38 @@ class Agent:
         """
         teach_color = None
         teach_number = None
-        teachable_colors = {card.color for card in opponent_hand}
-        teachable_numbers = {card.number for card in opponent_hand}
+        teachable_colors = {card.color for card in opponent.hand}
+        teachable_numbers = {card.number for card in opponent.hand}
         max_probability = 0
         for color in teachable_colors:
             probability_list = [
                 playable_cards[i]
-                for i, card in enumerate(opponent_hand)
+                for i, card in enumerate(opponent.hand)
                 if card.color == color
             ]
             if probability_list:
-                if (sum(probability_list) / len(probability_list)) > max_probability:
+                if (sum(probability_list) / len(probability_list)) >= max_probability:
+                    if (
+                        not opponent.is_info_updated(color=color)
+                        and max_probability != 0
+                    ):
+                        continue
                     max_probability = sum(probability_list) / len(probability_list)
                     teach_number = None
                     teach_color = color
         for number in teachable_numbers:
             probability_list = [
                 playable_cards[i]
-                for i, card in enumerate(opponent_hand)
+                for i, card in enumerate(opponent.hand)
                 if card.number == number
             ]
             if probability_list:
-                if (sum(probability_list) / len(probability_list)) > max_probability:
+                if (sum(probability_list) / len(probability_list)) >= max_probability:
+                    if (
+                        not opponent.is_info_updated(number=number)
+                        and max_probability != 0
+                    ):
+                        continue
                     max_probability = sum(probability_list) / len(probability_list)
                     teach_number = number
                     teach_color = None

@@ -190,7 +190,7 @@ def agent_action(room_id, player_id):
             game.teach_token -= 1
             color, number = opponent.teach_hint(
                 opponent.check_opponent_playable(player.hand, game.field_cards),
-                player.hand,
+                player
             )
             player.get_info(color=color, number=number)
             game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
