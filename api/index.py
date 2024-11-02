@@ -8,7 +8,7 @@ import random
 app = Flask(__name__)
 CORS(app)
 
-games = {i: Game() for i in range(400)}
+games = {i: Game(i) for i in range(400)}
 players = {
     i: {
         0: Player([games[i].deck.draw() for _ in range(5)]),
@@ -189,8 +189,7 @@ def agent_action(room_id, player_id):
         if any(opponent.check_opponent_playable(player.hand, game.field_cards)):
             game.teach_token -= 1
             color, number = opponent.teach_hint(
-                opponent.check_opponent_playable(player.hand, game.field_cards),
-                player
+                opponent.check_opponent_playable(player.hand, game.field_cards), player
             )
             player.get_info(color=color, number=number)
             game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)

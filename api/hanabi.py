@@ -8,9 +8,9 @@ from api.core.config import colors, teach_token, mistake_token, card_numbers
 
 # * ゲームのクラス
 class Game:
-    def __init__(self):
+    def __init__(self, room_id):
         # デッキを作成
-        self.deck = Deck()
+        self.deck = Deck(room_id)
 
         # フィールドを作成
         self.field_cards = [Card(color, 0) for color in colors]

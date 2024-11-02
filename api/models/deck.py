@@ -1,16 +1,11 @@
-import random
+import random, copy
 from api.models.card import Card
-from api.core.config import colors, card_numbers
+from api.core.config import decks
 
 
 class Deck:
-    def __init__(self):
-        self.cards = []
-        for i in range(len(colors)):
-            for j in range(5):
-                for k in range(card_numbers[j]):
-                    self.cards.append(Card(colors[i], j + 1))
-        random.shuffle(self.cards)
+    def __init__(self, room_id):
+        self.cards = copy.deepcopy(decks[room_id % 5])
 
     def draw(self):
         return self.cards.pop()
