@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from api.hanabi import Game
+from api.models.card import Card
 from api.models.player import Player
 from api.models.agent import Agent
-import random
+from api.core.config import colors
+import random, re
 
 app = Flask(__name__)
 CORS(app)
@@ -66,9 +68,6 @@ def post_info(room_id, player_id):
     room_id = int(room_id)
     player_id = int(player_id) % 2
 
-    # * クエリパラメータの取得
-    elapsed_time = request.args.get("time")
-
     game = games[room_id]
     player = players[room_id][player_id]
     opponent = players[room_id][1 - player_id]
@@ -86,7 +85,7 @@ def post_info(room_id, player_id):
         game.is_finished -= 1
 
     # * 思考時間の記録
-    elapsed_time = request.args.get("time")
+    elapsed_time = int(request.args.get("time"))
     game.elapsed_times.append({"elapsed_time": elapsed_time, "player_id": player_id})
 
     form_id = request.form.get("form_id")
@@ -139,24 +138,60 @@ def agent_action(room_id, player_id):
     room_id = int(room_id)
     player_id = int(player_id) % 2
 
-    # * クエリパラメータの取得
-    elapsed_time = request.args.get("time")
-
     game = games[room_id]
     player = players[room_id][player_id]
     agent = players[room_id][1 - player_id]
 
     #  * ゲームが終了している場合
     if game.check_finished():
-        return Response(status=200)
+        return jsonify({"thinking_time": game.elapsed_times[-1]["elapsed_time"]})
 
     # * エージェントのターンでない場合
     if game.current_player != 1:
-        return Response(status=200)
+        return jsonify({"thinking_time": game.elapsed_times[-1]["elapsed_time"]})
 
     # * 残山札が0の場合
     if len(game.deck.cards) == 0:
         game.is_finished -= 1
+
+    # * 思考時間が短かった場合の準備
+    is_get_action_by_short_thinking_time = False
+    hint_target_cards = []
+    if (
+        room_id >= 300
+        and "ヒント" in game.history[-1]["message"]
+        and game.elapsed_times[-1]["elapsed_time"] <= 12 * 1000
+    ):
+        is_get_action_by_short_thinking_time = True
+        hint = re.search(r"「(.*?)」", game.history[-1]["message"]).group(1)
+        if hint in colors:
+            for index, card in enumerate(agent.hand):
+                if card.color == hint:
+                    possible_cards = agent.info_model[index].get_possible_cards()
+                    possible_card_list = [
+                        Card(color, number)
+                        for color, numbers in possible_cards.items()
+                        for number in numbers
+                    ]
+                    matching_cards = [
+                        card for card in possible_card_list if card in game.field_cards
+                    ]
+                    if len(matching_cards) > 0:
+                        hint_target_cards.append(index)
+        else:
+            for index, card in enumerate(agent.hand):
+                if card.number == int(hint):
+                    possible_cards = agent.info_model[index].get_possible_cards()
+                    possible_card_list = [
+                        Card(color, number)
+                        for color, numbers in possible_cards.items()
+                        for number in numbers
+                    ]
+                    matching_cards = [
+                        card for card in possible_card_list if card in game.field_cards
+                    ]
+                    if len(matching_cards) > 0:
+                        hint_target_cards.append(index)
 
     # * エージェントの行動
     thinking_time = 12
@@ -190,11 +225,17 @@ def agent_action(room_id, player_id):
             agent.update_first_info(game.trash_table, game.field_cards, player.hand)
         if room_id >= 300:
             thinking_time = 8
-    # # * タイミングを考慮する処理を追加
-    # elif (
-    #     room_id >= 300 and "ヒント" in game.history[-1] and game.elapsed_times[-1] < 10
-    # ):
-    #     print("ヒントのタイミングを考慮")
+    # * タイミングを考慮する処理を追加
+    elif is_get_action_by_short_thinking_time and len(hint_target_cards) > 0:
+        index = random.choice(hint_target_cards)
+        card = agent.hand[index]
+        game.add_history(game.play(card), 1)
+        agent.discard(index)
+        if len(game.deck.cards) > 0:
+            agent.add(game.deck.draw())
+            agent.update_first_info(game.trash_table, game.field_cards, player.hand)
+        if room_id >= 300:
+            thinking_time = 8
     elif game.teach_token > 0:
         # * 相⼿がプレイ可能なカードを持っていたら、⾊または数字のヒントを与える
         if any(agent.check_opponent_playable(player.hand, game.field_cards)):
@@ -237,6 +278,7 @@ def agent_action(room_id, player_id):
         if room_id >= 300:
             thinking_time = 16
     game.switch_turn()
+    game.elapsed_times.append({"elapsed_time": thinking_time, "player_id": 1})
     return jsonify({"thinking_time": thinking_time})
 
 
