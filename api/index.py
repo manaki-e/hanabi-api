@@ -6,7 +6,7 @@ from api.models.player import Player
 from api.models.agent import Agent
 from api.core.config import (
     colors,
-    default_thinking_time,
+    long_thinking_time,
     short_thinking_time,
     border_thinking_time,
 )
@@ -218,7 +218,7 @@ def agent_action(room_id, player_id):
                         hint_target_cards.append(index)
 
     # * エージェントの行動
-    thinking_time = default_thinking_time
+    thinking_time = border_thinking_time
     # * プレイ可能なカードを持っていればプレイする
     if agent.check_playable(game.field_cards) is not None:
         game.agent_action_types.append(1)
@@ -286,6 +286,8 @@ def agent_action(room_id, player_id):
             if len(game.deck.cards) > 0:
                 agent.add(game.deck.draw())
                 agent.update_first_info(game.trash_table, game.field_cards, player.hand)
+            if room_id >= 300:
+                thinking_time = long_thinking_time
         # * 相⼿がプレイ可能なカードを持っていなかったら、与えてない情報の中からランダムにヒントを与える
         else:
             game.agent_action_types.append(7)
@@ -293,6 +295,8 @@ def agent_action(room_id, player_id):
             color, number = agent.teach_random_hint(player.hand)
             player.get_info(color=color, number=number)
             game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
+            if room_id >= 300:
+                thinking_time = long_thinking_time
     # * ヒントトークンが残っていなかったら、⾃分のカードからランダムに1枚捨てる
     else:
         game.agent_action_types.append(8)
@@ -303,6 +307,8 @@ def agent_action(room_id, player_id):
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())
             agent.update_first_info(game.trash_table, game.field_cards, player.hand)
+        if room_id >= 300:
+            thinking_time = long_thinking_time
     game.switch_turn()
     game.elapsed_times.append({"elapsed_time": thinking_time, "player_id": 1})
     return jsonify({"thinking_time": thinking_time})
