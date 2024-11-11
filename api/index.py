@@ -42,6 +42,25 @@ def rooms():
     )
 
 
+@app.route("/api/<room_id>", methods=["GET"])
+def get_room(room_id):
+    room_id = int(room_id)
+    game = games[room_id]
+    return jsonify(
+        {
+            "room_id": room_id,
+            "is_finished": game.check_finished(),
+            "total_points": sum(card.number for card in game.field_cards),
+            "teach_token": game.teach_token,
+            "mistake_token": game.mistake_token,
+            "deck_number": room_id % 5,
+            "history": game.history,
+            "elapsed_times": game.elapsed_times,
+            "agent_action_types": game.agent_action_types,
+        }
+    )
+
+
 @app.route("/api/<room_id>/<player_id>", methods=["GET"])
 def get_info(room_id, player_id):
 
@@ -202,6 +221,7 @@ def agent_action(room_id, player_id):
     thinking_time = default_thinking_time
     # * プレイ可能なカードを持っていればプレイする
     if agent.check_playable(game.field_cards) is not None:
+        game.agent_action_types.append(1)
         index = agent.check_playable(game.field_cards)
         card = agent.hand[index]
         game.add_history(game.play(card), 1)
@@ -213,6 +233,7 @@ def agent_action(room_id, player_id):
             thinking_time = short_thinking_time
     # * 山札が0の場合はヒントを与えたり捨てたりせずににプレイする
     elif len(game.deck.cards) == 0:
+        game.agent_action_types.append(2)
         index = random.randint(0, 4)
         card = agent.hand[index]
         game.add_history(game.play(card), 1)
@@ -221,6 +242,7 @@ def agent_action(room_id, player_id):
             thinking_time = short_thinking_time
     # * 破棄可能なカードを持っていば捨てる
     elif agent.check_discardable(game.get_discardable_cards()) is not None:
+        game.agent_action_types.append(3)
         index = agent.check_discardable(game.get_discardable_cards())
         card = agent.hand[index]
         game.add_history(game.trash(card), 1)
@@ -232,6 +254,7 @@ def agent_action(room_id, player_id):
             thinking_time = short_thinking_time
     # * タイミングを考慮する処理を追加
     elif is_get_action_by_short_thinking_time and len(hint_target_cards) > 0:
+        game.agent_action_types.append(4)
         index = random.choice(hint_target_cards)
         card = agent.hand[index]
         game.add_history(game.play(card), 1)
@@ -244,6 +267,7 @@ def agent_action(room_id, player_id):
     elif game.teach_token > 0:
         # * 相⼿がプレイ可能なカードを持っていたら、⾊または数字のヒントを与える
         if any(agent.check_opponent_playable(player.hand, game.field_cards)):
+            game.agent_action_types.append(5)
             game.teach_token -= 1
             color, number = agent.teach_hint(
                 agent.check_opponent_playable(player.hand, game.field_cards), player
@@ -254,6 +278,7 @@ def agent_action(room_id, player_id):
                 thinking_time = short_thinking_time
         # * 相⼿がプレイ可能なカードを持っていないかつ、残りのヒントトークンが少なければ、ヒントをもらっていないカードからランダムに捨てる
         elif game.teach_token < 2:
+            game.agent_action_types.append(6)
             index = agent.random_discard()
             card = agent.hand[index]
             game.add_history(game.trash(card), 1)
@@ -263,12 +288,14 @@ def agent_action(room_id, player_id):
                 agent.update_first_info(game.trash_table, game.field_cards, player.hand)
         # * 相⼿がプレイ可能なカードを持っていなかったら、与えてない情報の中からランダムにヒントを与える
         else:
+            game.agent_action_types.append(7)
             game.teach_token -= 1
             color, number = agent.teach_random_hint(player.hand)
             player.get_info(color=color, number=number)
             game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
     # * ヒントトークンが残っていなかったら、⾃分のカードからランダムに1枚捨てる
     else:
+        game.agent_action_types.append(8)
         index = agent.random_discard()
         card = agent.hand[index]
         game.add_history(game.trash(card), 1)

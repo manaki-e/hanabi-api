@@ -31,6 +31,9 @@ class Game:
         # 思考時間
         self.elapsed_times = []
 
+        # エージェントの行動種類
+        self.agent_action_types = []
+
     def switch_turn(self):
         self.current_player = 1 - self.current_player
 
