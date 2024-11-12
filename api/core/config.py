@@ -8,6 +8,7 @@ mistake_token = 3
 short_thinking_time = 8 * 1000
 long_thinking_time = 18 * 1000
 border_thinking_time = 12 * 1000
+default_thinking_time = 13 * 1000
 
 decks = [
     [
