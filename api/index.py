@@ -9,6 +9,7 @@ from api.core.config import (
     long_thinking_time,
     short_thinking_time,
     border_thinking_time,
+    default_thinking_time,
 )
 import random, re
 
