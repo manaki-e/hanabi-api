@@ -218,7 +218,7 @@ def agent_action(room_id, player_id):
                         hint_target_cards.append(index)
 
     # * エージェントの行動
-    thinking_time = border_thinking_time
+    thinking_time = 0
     # * プレイ可能なカードを持っていればプレイする
     if agent.check_playable(game.field_cards) is not None:
         game.agent_action_types.append(1)
