@@ -184,7 +184,7 @@ def agent_action(room_id, player_id):
     if (
         room_id >= 300
         and "ヒント" in game.history[-1]["message"]
-        and game.elapsed_times[-1]["elapsed_time"] <= border_thinking_time * 1000
+        and game.elapsed_times[-1]["elapsed_time"] <= border_thinking_time
     ):
         is_get_action_by_short_thinking_time = True
         hint = re.search(r"「(.*?)」", game.history[-1]["message"]).group(1)
