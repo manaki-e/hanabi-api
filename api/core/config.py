@@ -5,7 +5,7 @@ colors = ["blue", "green", "red", "white", "yellow"]
 card_numbers = [3, 2, 2, 2, 1]
 teach_token = 8
 mistake_token = 3
-short_thinking_time = 6 * 1000
+short_thinking_time = 8 * 1000
 long_thinking_time = 18 * 1000
 border_thinking_time = 12 * 1000
 
