@@ -56,6 +56,7 @@ def get_room(room_id):
             "mistake_token": game.mistake_token,
             "deck_number": room_id % 5,
             "remaining_cards": len(game.deck.cards),
+            "playing_card_hint": game.playing_card_hint,
             "history": game.history,
             "elapsed_times": game.elapsed_times,
             "agent_action_types": game.agent_action_types,
@@ -124,6 +125,7 @@ def post_info(room_id, player_id):
         # * アクション（プレイ / 捨てる）別の行動
         if action == "play":
             game.add_history(game.play(card), player_id)
+            game.playing_card_hint.append(player.info[index].count_not_none())
         elif action == "trash":
             game.add_history(game.trash(card), player_id)
 
@@ -227,6 +229,7 @@ def agent_action(room_id, player_id):
         index = agent.check_playable(game.field_cards)
         card = agent.hand[index]
         game.add_history(game.play(card), 1)
+        game.playing_card_hint.append(agent.info[index].count_not_none())
         agent.discard(index)
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())
@@ -260,6 +263,7 @@ def agent_action(room_id, player_id):
         index = random.choice(hint_target_cards)
         card = agent.hand[index]
         game.add_history(game.play(card), 1)
+        game.playing_card_hint.append(player.info[index].count_none())
         agent.discard(index)
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())

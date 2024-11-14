@@ -34,6 +34,9 @@ class Game:
         # エージェントの行動種類
         self.agent_action_types = []
 
+        # プレイした時のヒント状況
+        self.playing_card_hint = []
+
     def switch_turn(self):
         self.current_player = 1 - self.current_player
 
