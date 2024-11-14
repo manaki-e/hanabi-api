@@ -55,6 +55,7 @@ def get_room(room_id):
             "teach_token": game.teach_token,
             "mistake_token": game.mistake_token,
             "deck_number": room_id % 5,
+            "remaining_cards": len(game.deck.cards),
             "history": game.history,
             "elapsed_times": game.elapsed_times,
             "agent_action_types": game.agent_action_types,
