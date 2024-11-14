@@ -16,17 +16,17 @@ import random, re
 app = Flask(__name__)
 CORS(app)
 
-games = {i: Game(i) for i in range(400)}
+games = {i: Game(i) for i in range(250)}
 players = {
     i: {
         0: Player([games[i].deck.draw() for _ in range(5)]),
         1: (
             Player([games[i].deck.draw() for _ in range(5)])
-            if i < 200
+            if i < 150
             else Agent([games[i].deck.draw() for _ in range(5)])
         ),
     }
-    for i in range(400)
+    for i in range(250)
 }
 
 
@@ -38,7 +38,7 @@ def rooms():
                 "room_id": i,
                 "is_finished": games[i].check_finished(),
             }
-            for i in range(400)
+            for i in range(250)
         ]
     )
 
@@ -184,7 +184,7 @@ def agent_action(room_id, player_id):
     is_get_action_by_short_thinking_time = False
     hint_target_cards = []
     if (
-        room_id >= 300
+        room_id >= 200
         and "ヒント" in game.history[-1]["message"]
         and game.elapsed_times[-1]["elapsed_time"] <= border_thinking_time
     ):
@@ -231,7 +231,7 @@ def agent_action(room_id, player_id):
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())
             agent.update_first_info(game.trash_table, game.field_cards, player.hand)
-        if room_id >= 300:
+        if room_id >= 200:
             thinking_time = short_thinking_time
     # * 山札が0の場合はヒントを与えたり捨てたりせずににプレイする
     elif len(game.deck.cards) == 0:
@@ -240,7 +240,7 @@ def agent_action(room_id, player_id):
         card = agent.hand[index]
         game.add_history(game.play(card), 1)
         agent.discard(index)
-        if room_id >= 300:
+        if room_id >= 200:
             thinking_time = short_thinking_time
     # * 破棄可能なカードを持っていば捨てる
     elif agent.check_discardable(game.get_discardable_cards()) is not None:
@@ -252,7 +252,7 @@ def agent_action(room_id, player_id):
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())
             agent.update_first_info(game.trash_table, game.field_cards, player.hand)
-        if room_id >= 300:
+        if room_id >= 200:
             thinking_time = short_thinking_time
     # * タイミングを考慮する処理を追加
     elif is_get_action_by_short_thinking_time and len(hint_target_cards) > 0:
@@ -264,7 +264,7 @@ def agent_action(room_id, player_id):
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())
             agent.update_first_info(game.trash_table, game.field_cards, player.hand)
-        if room_id >= 300:
+        if room_id >= 200:
             thinking_time = short_thinking_time
     elif game.teach_token > 0:
         # * 相⼿がプレイ可能なカードを持っていたら、⾊または数字のヒントを与える
@@ -276,7 +276,7 @@ def agent_action(room_id, player_id):
             )
             player.get_info(color=color, number=number)
             game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
-            if room_id >= 300:
+            if room_id >= 200:
                 thinking_time = short_thinking_time
         # * 相⼿がプレイ可能なカードを持っていないかつ、残りのヒントトークンが少なければ、ヒントをもらっていないカードからランダムに捨てる
         elif game.teach_token < 2:
@@ -288,7 +288,7 @@ def agent_action(room_id, player_id):
             if len(game.deck.cards) > 0:
                 agent.add(game.deck.draw())
                 agent.update_first_info(game.trash_table, game.field_cards, player.hand)
-            if room_id >= 300:
+            if room_id >= 200:
                 thinking_time = long_thinking_time
         # * 相⼿がプレイ可能なカードを持っていなかったら、与えてない情報の中からランダムにヒントを与える
         else:
@@ -297,7 +297,7 @@ def agent_action(room_id, player_id):
             color, number = agent.teach_random_hint(player.hand)
             player.get_info(color=color, number=number)
             game.add_history(f"「{color or number}」に関するヒントを伝えました。", 1)
-            if room_id >= 300:
+            if room_id >= 200:
                 thinking_time = long_thinking_time
     # * ヒントトークンが残っていなかったら、⾃分のカードからランダムに1枚捨てる
     else:
@@ -309,7 +309,7 @@ def agent_action(room_id, player_id):
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())
             agent.update_first_info(game.trash_table, game.field_cards, player.hand)
-        if room_id >= 300:
+        if room_id >= 200:
             thinking_time = long_thinking_time
     game.switch_turn()
     game.elapsed_times.append({"elapsed_time": thinking_time, "player_id": 1})
