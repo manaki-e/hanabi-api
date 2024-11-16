@@ -263,7 +263,7 @@ def agent_action(room_id, player_id):
         index = random.choice(hint_target_cards)
         card = agent.hand[index]
         game.add_history(game.play(card), 1)
-        game.playing_card_hint.append(player.info[index].count_none())
+        game.playing_card_hint.append(player.info[index].count_not_none())
         agent.discard(index)
         if len(game.deck.cards) > 0:
             agent.add(game.deck.draw())
