@@ -37,6 +37,7 @@ def rooms():
             {
                 "room_id": i,
                 "is_finished": games[i].check_finished(),
+                "is_started": games[i].history != [],
             }
             for i in range(250)
         ]
